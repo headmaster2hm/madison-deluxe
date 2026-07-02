@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Service } from "@/data/services";
 
@@ -8,8 +9,15 @@ interface ServiceCardProps {
 export default function ServiceCard({ service }: ServiceCardProps) {
   return (
     <div className="group flex flex-col overflow-hidden rounded-2xl border border-sage-200 bg-white transition-all duration-300 hover:border-sage-300 hover:shadow-lg">
-      <div className="flex h-32 items-center justify-center bg-gradient-to-br from-sage-50 to-sage-100 text-5xl transition-transform duration-300 group-hover:scale-105">
-        {service.image}
+      <div className="relative h-48 overflow-hidden">
+        <Image
+          src={service.image}
+          alt={service.imageAlt}
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-sage-900/20 to-transparent" />
       </div>
       <div className="flex flex-1 flex-col p-6">
         <h3 className="font-serif text-xl font-semibold text-sage-800">

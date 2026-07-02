@@ -1,7 +1,9 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
+import { saveBooking } from "@/lib/booking-storage";
 import { services, timeSlots } from "@/data/services";
 
 interface FormData {
@@ -9,13 +11,16 @@ interface FormData {
   lastName: string;
   email: string;
   phone: string;
-  serviceId: string;
+  serviceIds: string[];
   date: string;
   time: string;
   notes: string;
 }
 
+type FormErrors = Partial<Record<keyof FormData, string>>;
+
 function BookingForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedService = searchParams.get("service") ?? "";
 
@@ -24,18 +29,21 @@ function BookingForm() {
     lastName: "",
     email: "",
     phone: "",
-    serviceId: preselectedService,
+    serviceIds: preselectedService ? [preselectedService] : [],
     date: "",
     time: "",
     notes: "",
   });
-  const [submitted, setSubmitted] = useState(false);
-  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+  const [errors, setErrors] = useState<FormErrors>({});
 
-  const selectedService = services.find((s) => s.id === formData.serviceId);
+  const selectedServices = services.filter((s) =>
+    formData.serviceIds.includes(s.id)
+  );
+  const totalPrice = selectedServices.reduce((sum, s) => sum + s.price, 0);
+  const totalDuration = selectedServices.reduce((sum, s) => sum + s.duration, 0);
 
   const validate = (): boolean => {
-    const newErrors: Partial<Record<keyof FormData, string>> = {};
+    const newErrors: FormErrors = {};
 
     if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
     if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
@@ -45,7 +53,9 @@ function BookingForm() {
       newErrors.email = "Please enter a valid email";
     }
     if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
-    if (!formData.serviceId) newErrors.serviceId = "Please select a service";
+    if (formData.serviceIds.length === 0) {
+      newErrors.serviceIds = "Please select at least one service";
+    }
     if (!formData.date) newErrors.date = "Please select a date";
     if (!formData.time) newErrors.time = "Please select a time";
 
@@ -62,66 +72,42 @@ function BookingForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    setSubmitted(true);
+
+    saveBooking({
+      firstName: formData.firstName.trim(),
+      lastName: formData.lastName.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      serviceIds: formData.serviceIds,
+      date: formData.date,
+      time: formData.time,
+      notes: formData.notes.trim(),
+    });
+
+    router.push("/payment");
   };
 
-  const updateField = (field: keyof FormData, value: string) => {
+  const updateField = <K extends keyof FormData>(field: K, value: FormData[K]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
 
-  const minDate = new Date().toISOString().split("T")[0];
+  const toggleService = (serviceId: string) => {
+    setFormData((prev) => {
+      const isSelected = prev.serviceIds.includes(serviceId);
+      const serviceIds = isSelected
+        ? prev.serviceIds.filter((id) => id !== serviceId)
+        : [...prev.serviceIds, serviceId];
+      return { ...prev, serviceIds };
+    });
+    if (errors.serviceIds) {
+      setErrors((prev) => ({ ...prev, serviceIds: undefined }));
+    }
+  };
 
-  if (submitted) {
-    return (
-      <div className="rounded-2xl border border-sage-200 bg-white p-10 text-center shadow-sm">
-        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-sage-100 text-4xl">
-          ✓
-        </div>
-        <h2 className="mt-6 font-serif text-3xl font-semibold text-sage-800">
-          Appointment Requested!
-        </h2>
-        <p className="mt-4 text-sage-600">
-          Thank you, {formData.firstName}! We&apos;ve received your booking request for{" "}
-          <strong>{selectedService?.name}</strong> on{" "}
-          <strong>
-            {new Date(formData.date + "T12:00:00").toLocaleDateString("en-US", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </strong>{" "}
-          at <strong>{formData.time}</strong>.
-        </p>
-        <p className="mt-2 text-sm text-sage-500">
-          A confirmation email will be sent to {formData.email}. Our team will
-          contact you shortly to confirm your appointment.
-        </p>
-        <button
-          type="button"
-          onClick={() => {
-            setSubmitted(false);
-            setFormData({
-              firstName: "",
-              lastName: "",
-              email: "",
-              phone: "",
-              serviceId: "",
-              date: "",
-              time: "",
-              notes: "",
-            });
-          }}
-          className="btn-outline mt-8"
-        >
-          Book Another Appointment
-        </button>
-      </div>
-    );
-  }
+  const minDate = new Date().toISOString().split("T")[0];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -200,41 +186,55 @@ function BookingForm() {
 
       {/* Service Selection */}
       <div>
-        <h3 className="mb-4 font-serif text-xl font-semibold text-sage-800">
-          Select Service
-        </h3>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {services.map((service) => (
-            <label
-              key={service.id}
-              className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all ${
-                formData.serviceId === service.id
-                  ? "border-sage-500 bg-sage-50 ring-2 ring-sage-200"
-                  : "border-sage-200 hover:border-sage-300"
-              }`}
-            >
-              <input
-                type="radio"
-                name="service"
-                value={service.id}
-                checked={formData.serviceId === service.id}
-                onChange={(e) => updateField("serviceId", e.target.value)}
-                className="mt-1 accent-sage-600"
-              />
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span>{service.image}</span>
-                  <span className="font-medium text-sage-800">{service.name}</span>
-                </div>
-                <p className="mt-1 text-xs text-sage-500">
-                  {service.duration} min · ${service.price}
-                </p>
-              </div>
-            </label>
-          ))}
+        <div className="mb-4 flex items-baseline justify-between gap-4">
+          <h3 className="font-serif text-xl font-semibold text-sage-800">
+            Select Services
+          </h3>
+          <p className="text-xs text-sage-500">Choose one or more</p>
         </div>
-        {errors.serviceId && (
-          <p className="mt-2 text-xs text-red-500">{errors.serviceId}</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {services.map((service) => {
+            const isSelected = formData.serviceIds.includes(service.id);
+            return (
+              <label
+                key={service.id}
+                className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all ${
+                  isSelected
+                    ? "border-sage-500 bg-sage-50 ring-2 ring-sage-200"
+                    : "border-sage-200 hover:border-sage-300"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  name="services"
+                  value={service.id}
+                  checked={isSelected}
+                  onChange={() => toggleService(service.id)}
+                  className="mt-1 h-4 w-4 rounded accent-sage-600"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center gap-3">
+                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg">
+                      <Image
+                        src={service.image}
+                        alt={service.imageAlt}
+                        fill
+                        sizes="48px"
+                        className="object-cover"
+                      />
+                    </div>
+                    <span className="font-medium text-sage-800">{service.name}</span>
+                  </div>
+                  <p className="mt-1 text-xs text-sage-500">
+                    {service.duration} min · ${service.price}
+                  </p>
+                </div>
+              </label>
+            );
+          })}
+        </div>
+        {errors.serviceIds && (
+          <p className="mt-2 text-xs text-red-500">{errors.serviceIds}</p>
         )}
       </div>
 
@@ -300,25 +300,40 @@ function BookingForm() {
       </div>
 
       {/* Summary */}
-      {selectedService && (
+      {selectedServices.length > 0 && (
         <div className="rounded-xl bg-sage-50 p-6">
           <h4 className="text-sm font-semibold uppercase tracking-wider text-sage-600">
             Booking Summary
           </h4>
-          <div className="mt-3 flex items-center justify-between">
-            <div>
-              <p className="font-medium text-sage-800">{selectedService.name}</p>
-              <p className="text-sm text-sage-500">{selectedService.duration} minutes</p>
+          <ul className="mt-4 space-y-3">
+            {selectedServices.map((service) => (
+              <li
+                key={service.id}
+                className="flex items-center justify-between text-sm"
+              >
+                <div>
+                  <p className="font-medium text-sage-800">{service.name}</p>
+                  <p className="text-sage-500">{service.duration} minutes</p>
+                </div>
+                <p className="font-medium text-sage-700">${service.price}</p>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-4 flex items-center justify-between border-t border-sage-200 pt-4">
+            <div className="text-sm text-sage-600">
+              <span>{selectedServices.length} service{selectedServices.length > 1 ? "s" : ""}</span>
+              <span className="mx-2">·</span>
+              <span>{totalDuration} min total</span>
             </div>
             <p className="font-serif text-2xl font-semibold text-sage-700">
-              ${selectedService.price}
+              ${totalPrice}
             </p>
           </div>
         </div>
       )}
 
       <button type="submit" className="btn-primary w-full sm:w-auto">
-        Confirm Appointment
+        Continue to Payment
       </button>
     </form>
   );

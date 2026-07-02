@@ -14,8 +14,8 @@ export default function BookPage() {
         <p className="subheading">Reserve Your Visit</p>
         <h1 className="heading-serif mt-3">Book an Appointment</h1>
         <p className="mx-auto mt-4 max-w-xl text-sage-600">
-          Choose your preferred service, date, and time. We&apos;ll confirm your
-          appointment and send you a reminder before your visit.
+          Choose your preferred services, date, and time. You can select multiple
+          treatments in one visit, then proceed to secure payment.
         </p>
       </div>
 

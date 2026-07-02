@@ -152,3 +152,6 @@ vite.config.ts.timestamp-*
 # misc
 .DS_Store
 *.pem
+
+# appointment data (local storage)
+/data/appointments.json

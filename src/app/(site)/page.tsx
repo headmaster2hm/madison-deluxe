@@ -1,18 +1,48 @@
+import Image from "next/image";
 import Link from "next/link";
 import ServiceCard from "@/components/ServiceCard";
+import { siteImages } from "@/data/images";
 import { services, categoryLabels } from "@/data/services";
 
 export default function HomePage() {
   const categories = ["massage", "spa", "wellness"] as const;
 
+  const features = [
+    {
+      image: siteImages.features.naturalProducts,
+      title: "Natural Products",
+      desc: "Premium organic and botanical ingredients in every treatment.",
+    },
+    {
+      image: siteImages.features.expertTherapists,
+      title: "Expert Therapists",
+      desc: "Licensed professionals with years of specialized training.",
+    },
+    {
+      image: siteImages.features.luxuriousSetting,
+      title: "Luxurious Setting",
+      desc: "Serene, elegantly designed spaces for complete relaxation.",
+    },
+    {
+      image: siteImages.features.personalizedCare,
+      title: "Personalized Care",
+      desc: "Every session tailored to your unique needs and preferences.",
+    },
+  ];
+
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-sage-700 via-sage-600 to-sage-800 text-cream-50">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-gold-400 blur-3xl" />
-          <div className="absolute -bottom-32 -left-20 h-80 w-80 rounded-full bg-sage-300 blur-3xl" />
-        </div>
+      <section className="relative overflow-hidden text-cream-50">
+        <Image
+          src={siteImages.hero.src}
+          alt={siteImages.hero.alt}
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-sage-900/80 via-sage-800/70 to-sage-900/80" />
 
         <div className="section-padding relative mx-auto flex max-w-7xl flex-col items-center text-center">
           <p className="subheading text-gold-400">Welcome to tranquility</p>
@@ -42,7 +72,7 @@ export default function HomePage() {
             { value: "10K+", label: "Happy Clients" },
             { value: "20+", label: "Premium Services" },
           ].map((stat) => (
-            <div key={stat.label} className="bg-sage-700/50 px-4 py-8 text-center backdrop-blur-sm">
+            <div key={stat.label} className="bg-sage-900/50 px-4 py-8 text-center backdrop-blur-sm">
               <p className="font-serif text-3xl font-semibold text-gold-400 md:text-4xl">
                 {stat.value}
               </p>
@@ -96,37 +126,26 @@ export default function HomePage() {
           </div>
 
           <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-            {[
-              {
-                icon: "🌿",
-                title: "Natural Products",
-                desc: "Premium organic and botanical ingredients in every treatment.",
-              },
-              {
-                icon: "👩‍⚕️",
-                title: "Expert Therapists",
-                desc: "Licensed professionals with years of specialized training.",
-              },
-              {
-                icon: "🏛️",
-                title: "Luxurious Setting",
-                desc: "Serene, elegantly designed spaces for complete relaxation.",
-              },
-              {
-                icon: "💆",
-                title: "Personalized Care",
-                desc: "Every session tailored to your unique needs and preferences.",
-              },
-            ].map((item) => (
+            {features.map((item) => (
               <div
                 key={item.title}
-                className="rounded-2xl bg-white p-8 text-center shadow-sm transition-shadow hover:shadow-md"
+                className="overflow-hidden rounded-2xl bg-white shadow-sm transition-shadow hover:shadow-md"
               >
-                <span className="text-4xl">{item.icon}</span>
-                <h3 className="mt-4 font-serif text-xl font-semibold text-sage-800">
-                  {item.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-sage-600">{item.desc}</p>
+                <div className="relative h-40">
+                  <Image
+                    src={item.image.src}
+                    alt={item.image.alt}
+                    fill
+                    sizes="(max-width: 1024px) 50vw, 25vw"
+                    className="object-cover"
+                  />
+                </div>
+                <div className="p-6 text-center">
+                  <h3 className="font-serif text-xl font-semibold text-sage-800">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-sage-600">{item.desc}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -137,10 +156,14 @@ export default function HomePage() {
       <section id="about" className="section-padding mx-auto max-w-7xl">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div className="relative">
-            <div className="aspect-[4/5] overflow-hidden rounded-2xl bg-gradient-to-br from-sage-200 to-sage-300">
-              <div className="flex h-full items-center justify-center">
-                <span className="text-8xl opacity-40">🧖‍♀️</span>
-              </div>
+            <div className="relative aspect-[4/5] overflow-hidden rounded-2xl">
+              <Image
+                src={siteImages.about.src}
+                alt={siteImages.about.alt}
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
+              />
             </div>
             <div className="absolute -bottom-6 -right-6 hidden rounded-xl bg-gold-500 px-8 py-6 text-white shadow-lg lg:block">
               <p className="font-serif text-3xl font-semibold">Since 2010</p>
@@ -173,8 +196,15 @@ export default function HomePage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-sage-700 section-padding text-center text-cream-50">
-        <div className="mx-auto max-w-3xl">
+      <section className="relative overflow-hidden bg-sage-700 section-padding text-center text-cream-50">
+        <Image
+          src={siteImages.cta.src}
+          alt={siteImages.cta.alt}
+          fill
+          sizes="100vw"
+          className="object-cover opacity-20"
+        />
+        <div className="relative mx-auto max-w-3xl">
           <h2 className="font-serif text-4xl font-semibold md:text-5xl">
             Ready to Relax?
           </h2>
