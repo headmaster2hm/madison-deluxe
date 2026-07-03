@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { standardPricingOptions } from "@/data/services";
 import type { Service } from "@/data/services";
 
 interface ServiceCardProps {
@@ -7,6 +8,8 @@ interface ServiceCardProps {
 }
 
 export default function ServiceCard({ service }: ServiceCardProps) {
+  const startingPrice = standardPricingOptions[0].price;
+
   return (
     <div className="group flex flex-col overflow-hidden rounded-2xl border border-sage-200 bg-white transition-all duration-300 hover:border-sage-300 hover:shadow-lg">
       <div className="relative h-48 overflow-hidden">
@@ -26,18 +29,28 @@ export default function ServiceCard({ service }: ServiceCardProps) {
         <p className="mt-2 flex-1 text-sm leading-relaxed text-sage-600">
           {service.description}
         </p>
-        <div className="mt-4 flex items-center justify-between border-t border-sage-100 pt-4">
-          <div className="text-sm text-sage-500">
-            <span>{service.duration} min</span>
-            <span className="mx-2">·</span>
-            <span className="font-semibold text-sage-700">${service.price}</span>
+        <div className="mt-4 space-y-2 border-t border-sage-100 pt-4">
+          <div className="flex flex-wrap gap-2">
+            {service.pricingOptions.map((option) => (
+              <span
+                key={option.id}
+                className="rounded-full bg-sage-50 px-2.5 py-1 text-xs text-sage-600"
+              >
+                {option.label} · ${option.price}
+              </span>
+            ))}
           </div>
-          <Link
-            href={`/book?service=${service.id}`}
-            className="text-xs font-medium uppercase tracking-wider text-gold-600 transition-colors hover:text-gold-500"
-          >
-            Book →
-          </Link>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-sage-700">
+              From ${startingPrice}
+            </span>
+            <Link
+              href={`/book?service=${service.id}`}
+              className="text-xs font-medium uppercase tracking-wider text-gold-600 transition-colors hover:text-gold-500"
+            >
+              Book →
+            </Link>
+          </div>
         </div>
       </div>
     </div>

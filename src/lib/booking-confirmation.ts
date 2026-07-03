@@ -1,5 +1,9 @@
 import type Stripe from "stripe";
-import { services } from "@/data/services";
+import {
+  decodeLegacyServiceIds,
+  decodeSelections,
+  resolveBookedServices,
+} from "@/lib/service-selection";
 import type { BookingConfirmation, BookingData } from "@/types/booking";
 
 export function generateConfirmationId(): string {
@@ -17,27 +21,15 @@ export function validateBooking(booking: BookingData): string | null {
     return "Please enter a valid email";
   }
   if (!booking.phone?.trim()) return "Phone number is required";
-  if (!booking.serviceIds?.length) return "No services selected";
+  if (!booking.selections?.length) return "No services selected";
+  if (!resolveBookedServices(booking.selections)) return "Invalid service selection";
   if (!booking.date) return "Date is required";
   if (!booking.time) return "Time is required";
   return null;
 }
 
-export function getBookedServices(serviceIds: string[]) {
-  const bookedServices = services
-    .filter((s) => serviceIds.includes(s.id))
-    .map((s) => ({
-      id: s.id,
-      name: s.name,
-      duration: s.duration,
-      price: s.price,
-    }));
-
-  if (bookedServices.length !== serviceIds.length) {
-    return null;
-  }
-
-  return bookedServices;
+export function getBookedServices(selections: BookingData["selections"]) {
+  return resolveBookedServices(selections);
 }
 
 export async function buildConfirmationFromSession(
@@ -45,12 +37,15 @@ export async function buildConfirmationFromSession(
   paymentLast4 = "****"
 ): Promise<BookingConfirmation | null> {
   const metadata = session.metadata;
-  if (!metadata?.confirmation_id || !metadata.service_ids) {
-    return null;
-  }
+  if (!metadata?.confirmation_id) return null;
 
-  const serviceIds = metadata.service_ids.split(",").filter(Boolean);
-  const bookedServices = getBookedServices(serviceIds);
+  const selections =
+    decodeSelections(metadata.selections) ??
+    decodeLegacyServiceIds(metadata.service_ids);
+
+  if (!selections) return null;
+
+  const bookedServices = resolveBookedServices(selections);
   if (!bookedServices) return null;
 
   const totalAmount =
@@ -63,7 +58,7 @@ export async function buildConfirmationFromSession(
     lastName: metadata.last_name ?? "",
     email: metadata.email ?? session.customer_email ?? "",
     phone: metadata.phone ?? "",
-    serviceIds,
+    selections,
     date: metadata.date ?? "",
     time: metadata.time ?? "",
     notes: metadata.notes ?? "",

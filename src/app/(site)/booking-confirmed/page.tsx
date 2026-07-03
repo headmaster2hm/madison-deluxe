@@ -144,7 +144,9 @@ function BookingConfirmedContent() {
                   className="flex items-center justify-between text-sm"
                 >
                   <span className="text-sage-800">{service.name}</span>
-                  <span className="text-sage-600">${service.price}</span>
+                  <span className="text-sage-600">
+                    ${service.price} · {service.durationLabel}
+                  </span>
                 </li>
               ))}
             </ul>

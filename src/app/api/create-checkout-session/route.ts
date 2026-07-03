@@ -4,6 +4,7 @@ import {
   getBookedServices,
   validateBooking,
 } from "@/lib/booking-confirmation";
+import { encodeSelections } from "@/lib/service-selection";
 import { getAppUrl, getStripe } from "@/lib/stripe";
 import type { BookingData } from "@/types/booking";
 
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
-    const bookedServices = getBookedServices(booking.serviceIds);
+    const bookedServices = getBookedServices(booking.selections);
     if (!bookedServices) {
       return NextResponse.json({ error: "Invalid service selection" }, { status: 400 });
     }
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
           unit_amount: service.price * 100,
           product_data: {
             name: service.name,
-            description: `${service.duration} minute treatment`,
+            description: `${service.durationLabel} treatment`,
           },
         },
         quantity: 1,
@@ -60,7 +61,7 @@ export async function POST(request: Request) {
         date: booking.date,
         time: booking.time,
         notes: booking.notes ?? "",
-        service_ids: booking.serviceIds.join(","),
+        selections: encodeSelections(booking.selections),
         email_sent: "false",
       },
       success_url: `${appUrl}/booking-confirmed?session_id={CHECKOUT_SESSION_ID}`,

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { getBooking } from "@/lib/booking-storage";
-import { services } from "@/data/services";
+import { getSelectionTotals, resolveBookedServices } from "@/lib/service-selection";
 import type { BookingData } from "@/types/booking";
 
 function PaymentFormContent() {
@@ -18,7 +18,7 @@ function PaymentFormContent() {
 
   useEffect(() => {
     const saved = getBooking();
-    if (!saved || saved.serviceIds.length === 0) {
+    if (!saved || saved.selections.length === 0) {
       router.replace("/book");
       return;
     }
@@ -33,11 +33,8 @@ function PaymentFormContent() {
     );
   }
 
-  const selectedServices = services.filter((s) =>
-    booking.serviceIds.includes(s.id)
-  );
-  const totalPrice = selectedServices.reduce((sum, s) => sum + s.price, 0);
-  const totalDuration = selectedServices.reduce((sum, s) => sum + s.duration, 0);
+  const bookedLines = resolveBookedServices(booking.selections) ?? [];
+  const { totalPrice, totalDuration } = getSelectionTotals(bookedLines);
 
   const formattedDate = new Date(booking.date + "T12:00:00").toLocaleDateString(
     "en-US",
@@ -99,16 +96,16 @@ function PaymentFormContent() {
               Services
             </h4>
             <ul className="mt-3 space-y-3">
-              {selectedServices.map((service) => (
+              {bookedLines.map((line) => (
                 <li
-                  key={service.id}
+                  key={`${line.id}-${line.pricingOptionId}`}
                   className="flex items-center justify-between text-sm"
                 >
                   <div>
-                    <p className="font-medium text-sage-800">{service.name}</p>
-                    <p className="text-sage-500">{service.duration} min</p>
+                    <p className="font-medium text-sage-800">{line.name}</p>
+                    <p className="text-sage-500">{line.durationLabel}</p>
                   </div>
-                  <p className="font-medium text-sage-700">${service.price}</p>
+                  <p className="font-medium text-sage-700">${line.price}</p>
                 </li>
               ))}
             </ul>
@@ -116,8 +113,8 @@ function PaymentFormContent() {
 
           <div className="mt-4 flex items-center justify-between border-t border-sage-200 pt-4">
             <div className="text-sm text-sage-600">
-              {selectedServices.length} service
-              {selectedServices.length > 1 ? "s" : ""} · {totalDuration} min
+              {bookedLines.length} service
+              {bookedLines.length > 1 ? "s" : ""} · {totalDuration} min
             </div>
             <p className="font-serif text-2xl font-semibold text-sage-800">
               ${totalPrice}

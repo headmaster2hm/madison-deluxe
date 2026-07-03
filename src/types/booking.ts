@@ -1,24 +1,33 @@
+export interface ServiceSelection {
+  serviceId: string;
+  pricingOptionId: string;
+}
+
 export interface BookingData {
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
-  serviceIds: string[];
+  selections: ServiceSelection[];
   date: string;
   time: string;
   notes: string;
+}
+
+export interface BookedServiceLine {
+  id: string;
+  name: string;
+  duration: number;
+  durationLabel: string;
+  price: number;
+  pricingOptionId: string;
 }
 
 export interface BookingConfirmation {
   confirmationId: string;
   stripeSessionId?: string;
   booking: BookingData;
-  services: {
-    id: string;
-    name: string;
-    duration: number;
-    price: number;
-  }[];
+  services: BookedServiceLine[];
   totalAmount: number;
   totalDuration: number;
   paidAt: string;

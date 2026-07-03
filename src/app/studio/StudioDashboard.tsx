@@ -434,7 +434,9 @@ export default function StudioDashboard() {
                         </td>
                         <td className="px-6 py-4">
                           <p className="text-sage-700">
-                            {appointment.services.map((s) => s.name).join(", ")}
+                            {appointment.services
+                              .map((s) => `${s.name} (${s.durationLabel})`)
+                              .join(", ")}
                           </p>
                           <p className="text-xs text-sage-500">
                             {appointment.totalDuration} min total

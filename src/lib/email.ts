@@ -17,7 +17,7 @@ function buildEmailHtml(confirmation: BookingConfirmation): string {
       (s) => `
       <tr>
         <td style="padding: 8px 0; border-bottom: 1px solid #e4ebe4;">${s.name}</td>
-        <td style="padding: 8px 0; border-bottom: 1px solid #e4ebe4; text-align: center;">${s.duration} min</td>
+        <td style="padding: 8px 0; border-bottom: 1px solid #e4ebe4; text-align: center;">${s.durationLabel}</td>
         <td style="padding: 8px 0; border-bottom: 1px solid #e4ebe4; text-align: right;">$${s.price}</td>
       </tr>`
     )
@@ -98,7 +98,7 @@ function buildEmailText(confirmation: BookingConfirmation): string {
     confirmation;
 
   const serviceList = services
-    .map((s) => `  - ${s.name} (${s.duration} min) — $${s.price}`)
+    .map((s) => `  - ${s.name} (${s.durationLabel}) — $${s.price}`)
     .join("\n");
 
   return `Madison Deluxe Spa & Wellness Center
