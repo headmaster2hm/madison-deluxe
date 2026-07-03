@@ -4,6 +4,7 @@ import {
   HAPPY_ENDING_ADDON_PRICE,
   normalizeServiceId,
   supportsHappyEndingAddon,
+  WEEKEND_VIBE_ID,
   DEFAULT_PRICING_OPTION_ID,
 } from "@/data/services";
 import type { BookedServiceLine, ServiceSelection } from "@/types/booking";
@@ -26,10 +27,13 @@ export function resolveBookedServices(
         ? HAPPY_ENDING_ADDON_PRICE
         : 0;
 
+    const isWeekendVibe = serviceId === WEEKEND_VIBE_ID;
+
     lines.push({
       id: service.id,
-      name:
-        happyEndingAddon > 0
+      name: isWeekendVibe
+        ? `${service.name} Package (incl. happy ending)`
+        : happyEndingAddon > 0
           ? `${service.name} + Happy ending`
           : service.name,
       duration: option.durationMinutes,

@@ -101,11 +101,18 @@ export async function updateAppointmentStatus(
 }
 
 function parseTime(time: string): number {
-  const match = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-  if (!match) return 0;
-  let hours = parseInt(match[1], 10);
-  const minutes = parseInt(match[2], 10);
-  const period = match[3].toUpperCase();
+  const twentyFourHour = time.match(/^(\d{1,2}):(\d{2})$/);
+  if (twentyFourHour) {
+    const hours = parseInt(twentyFourHour[1], 10);
+    const minutes = parseInt(twentyFourHour[2], 10);
+    return hours * 60 + minutes;
+  }
+
+  const twelveHour = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!twelveHour) return 0;
+  let hours = parseInt(twelveHour[1], 10);
+  const minutes = parseInt(twelveHour[2], 10);
+  const period = twelveHour[3].toUpperCase();
   if (period === "PM" && hours !== 12) hours += 12;
   if (period === "AM" && hours === 12) hours = 0;
   return hours * 60 + minutes;

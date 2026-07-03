@@ -48,6 +48,9 @@ export default function Footer() {
             © {new Date().getFullYear()} Madison Deluxe Spa & Wellness Center. All rights reserved.
           </p>
           <div className="flex gap-6">
+            <Link href="/weekend-vibe" className="text-xs uppercase tracking-wider text-gold-400 hover:text-gold-500">
+              Weekend Vibe
+            </Link>
             <Link href="/book" className="text-xs uppercase tracking-wider text-gold-400 hover:text-gold-500">
               Book Now
             </Link>

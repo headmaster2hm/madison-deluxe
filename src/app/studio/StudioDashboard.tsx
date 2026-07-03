@@ -42,6 +42,14 @@ function isUpcoming(appointment: AppointmentRecord): boolean {
   if (apptDate > today) return true;
   if (apptDate < today) return false;
 
+  const twentyFourHour = appointment.time.match(/^(\d{1,2}):(\d{2})$/);
+  if (twentyFourHour) {
+    const hours = parseInt(twentyFourHour[1], 10);
+    const minutes = parseInt(twentyFourHour[2], 10);
+    const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
+    return hours * 60 + minutes >= nowMinutes;
+  }
+
   const match = appointment.time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
   if (!match) return true;
   let hours = parseInt(match[1], 10);

@@ -16,6 +16,7 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/#services", label: "Services" },
   { href: "/team", label: "Team" },
+  { href: "/weekend-vibe", label: "Weekend Vibe" },
   { href: "/book", label: "Book Now" },
   { href: "/#about", label: "About" },
   { href: "/#contact", label: "Contact" },
@@ -110,7 +111,7 @@ function DesktopNavDropdown({
     <div className="group relative">
       <button
         type="button"
-        className="flex items-center gap-1 text-sm font-medium uppercase tracking-wider text-sage-600 transition-colors hover:text-sage-800"
+        className="flex items-center gap-1 whitespace-nowrap text-xs font-medium uppercase tracking-wide text-sage-600 transition-colors hover:text-sage-800 xl:text-sm"
         aria-haspopup="true"
       >
         {label}
@@ -154,25 +155,25 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 overflow-visible border-b border-sage-200/60 bg-cream-50/95 backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between overflow-visible px-6 py-4 md:px-12">
-        <Link href="/" className="group flex flex-col">
-          <span className="font-serif text-2xl font-semibold tracking-wide text-sage-800 transition-colors group-hover:text-sage-600 md:text-3xl">
+    <header className="sticky top-0 z-[100] overflow-visible border-b border-sage-200/60 bg-cream-50/95 backdrop-blur-md">
+      <div className="flex w-full items-center justify-between gap-3 overflow-visible px-3 py-3 sm:px-4 lg:px-5">
+        <Link href="/" className="group shrink-0 flex flex-col">
+          <span className="font-serif text-xl font-semibold tracking-wide text-sage-800 transition-colors group-hover:text-sage-600 lg:text-2xl">
             Madison Deluxe
           </span>
-          <span className="text-[10px] font-medium uppercase tracking-[0.25em] text-gold-500 md:text-xs">
+          <span className="text-[9px] font-medium uppercase tracking-[0.2em] text-gold-500 lg:text-[10px]">
             Spa & Wellness Center
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-6 overflow-visible lg:flex lg:gap-8">
+        <nav className="hidden shrink-0 flex-nowrap items-center gap-3 overflow-visible lg:flex xl:gap-4">
           {navLinks
             .filter((link) => link.label !== "Book Now")
             .map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium uppercase tracking-wider text-sage-600 transition-colors hover:text-sage-800"
+                className="whitespace-nowrap text-xs font-medium uppercase tracking-wide text-sage-600 transition-colors hover:text-sage-800 xl:text-sm"
               >
                 {link.label}
               </Link>
@@ -186,7 +187,7 @@ export default function Header() {
             align="right"
           />
 
-          <Link href="/book" className="btn-primary !px-6 !py-2.5 !text-xs">
+          <Link href="/book" className="btn-primary shrink-0 !px-4 !py-2 !text-[11px] xl:!px-5 xl:!text-xs">
             Book Appointment
           </Link>
         </nav>

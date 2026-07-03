@@ -33,18 +33,20 @@ export default function HomePage() {
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden text-cream-50">
-        <Image
-          src={siteImages.hero.src}
-          alt={siteImages.hero.alt}
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-sage-900/80 via-sage-800/70 to-sage-900/80" />
+      <section className="hero-section text-cream-50">
+        <div className="hero-media">
+          <Image
+            src={siteImages.hero.src}
+            alt={siteImages.hero.alt}
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+        </div>
+        <div className="hero-overlay bg-gradient-to-br from-sage-900/80 via-sage-800/70 to-sage-900/80" />
 
-        <div className="section-padding relative mx-auto flex max-w-7xl flex-col items-center text-center">
+        <div className="hero-content section-padding mx-auto flex max-w-7xl flex-col items-center text-center">
           <p className="subheading text-gold-400">Welcome to tranquility</p>
           <h1 className="mt-4 font-serif text-5xl font-semibold leading-tight md:text-7xl lg:text-8xl">
             Madison Deluxe
@@ -66,7 +68,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="relative mx-auto grid max-w-7xl grid-cols-3 gap-px bg-sage-600/30 px-6 pb-16 md:px-12">
+        <div className="hero-content relative mx-auto grid max-w-7xl grid-cols-3 gap-px bg-sage-600/30 px-6 pb-16 md:px-12">
           {[
             { value: "15+", label: "Years of Excellence" },
             { value: "10K+", label: "Happy Clients" },
@@ -201,15 +203,17 @@ export default function HomePage() {
       </section>
 
       {/* CTA */}
-      <section className="relative overflow-hidden bg-sage-700 section-padding text-center text-cream-50">
-        <Image
-          src={siteImages.cta.src}
-          alt={siteImages.cta.alt}
-          fill
-          sizes="100vw"
-          className="object-cover opacity-20"
-        />
-        <div className="relative mx-auto max-w-3xl">
+      <section className="bg-image-section bg-sage-700 text-center text-cream-50">
+        <div className="hero-media">
+          <Image
+            src={siteImages.cta.src}
+            alt={siteImages.cta.alt}
+            fill
+            sizes="100vw"
+            className="object-cover opacity-20"
+          />
+        </div>
+        <div className="hero-content section-padding mx-auto max-w-3xl">
           <h2 className="font-serif text-4xl font-semibold md:text-5xl">
             Ready to Relax?
           </h2>

@@ -1,3 +1,5 @@
+import { WEEKEND_VIBE_ID, weekendVibePackage } from "./weekend-vibe";
+
 const image = (id: string, width = 800) =>
   `https://images.unsplash.com/photo-${id}?w=${width}&q=80&auto=format&fit=crop`;
 
@@ -44,6 +46,21 @@ export const services: Service[] = [
     pricingOptions: pricingTiers([120, 210, 285, 365]),
     image: image("1515377905703-c4788e51af15"),
     imageAlt: "Full body massage treatment in a private spa suite",
+  },
+  {
+    id: WEEKEND_VIBE_ID,
+    name: weekendVibePackage.name,
+    category: "massage",
+    description:
+      "Our premium weekend package — signature full body massage, hot stones, aromatherapy, deep tissue work, and happy ending included.",
+    pricingOptions: pricingTiers([
+      weekendVibePackage.pricing[0].price,
+      weekendVibePackage.pricing[1].price,
+      weekendVibePackage.pricing[2].price,
+      weekendVibePackage.pricing[3].price,
+    ]),
+    image: weekendVibePackage.heroImage,
+    imageAlt: weekendVibePackage.heroImageAlt,
   },
   {
     id: "swedish-massage",
@@ -490,6 +507,7 @@ export const services: Service[] = [
 export const DEFAULT_PRICING_OPTION_ID = durationTiers[0].id;
 
 export const FULL_BODY_MASSAGE_ID = "full-body-massage";
+export { WEEKEND_VIBE_ID } from "./weekend-vibe";
 export const HAPPY_ENDING_ADDON_PRICE = 85;
 
 const LEGACY_SERVICE_IDS: Record<string, string> = {
@@ -519,19 +537,9 @@ export function getStartingPrice(service: Service): number {
   return service.pricingOptions[0]?.price ?? 0;
 }
 
-export const timeSlots = [
-  "9:00 AM",
-  "10:00 AM",
-  "11:00 AM",
-  "12:00 PM",
-  "1:00 PM",
-  "2:00 PM",
-  "3:00 PM",
-  "4:00 PM",
-  "5:00 PM",
-  "6:00 PM",
-  "7:00 PM",
-];
+export const timeSlots = Array.from({ length: 24 }, (_, hour) =>
+  `${hour.toString().padStart(2, "0")}:00`
+);
 
 export const categoryLabels: Record<Service["category"], string> = {
   massage: "Massage Therapy",
