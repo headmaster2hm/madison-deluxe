@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { standardPricingOptions } from "@/data/services";
+import { getStartingPrice } from "@/data/services";
 import type { Service } from "@/data/services";
 
 interface ServiceCardProps {
@@ -8,7 +8,7 @@ interface ServiceCardProps {
 }
 
 export default function ServiceCard({ service }: ServiceCardProps) {
-  const startingPrice = standardPricingOptions[0].price;
+  const startingPrice = getStartingPrice(service);
 
   return (
     <div className="group flex flex-col overflow-hidden rounded-2xl border border-sage-200 bg-white transition-all duration-300 hover:border-sage-300 hover:shadow-lg">

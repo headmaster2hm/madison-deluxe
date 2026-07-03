@@ -22,11 +22,7 @@ export default function Footer() {
             <h4 className="text-sm font-semibold uppercase tracking-wider text-gold-400">
               Hours
             </h4>
-            <ul className="mt-4 space-y-2 text-sm text-sage-200">
-              <li>Monday – Friday: 9:00 AM – 8:00 PM</li>
-              <li>Saturday: 9:00 AM – 7:00 PM</li>
-              <li>Sunday: 10:00 AM – 6:00 PM</li>
-            </ul>
+            <p className="mt-4 text-sm text-sage-200">Active 24/7</p>
           </div>
 
           <div>
@@ -34,13 +30,7 @@ export default function Footer() {
               Contact
             </h4>
             <ul className="mt-4 space-y-2 text-sm text-sage-200">
-              <li>123 Wellness Boulevard</li>
-              <li>Madison, WI 53703</li>
-              <li>
-                <a href="tel:+16025550123" className="hover:text-gold-400 transition-colors">
-                  (602) 555-0123
-                </a>
-              </li>
+              <li>(602) XXX - XXXX</li>
               <li>
                 <a
                   href="mailto:hello@madisondeluxe.com"
@@ -60,6 +50,9 @@ export default function Footer() {
           <div className="flex gap-6">
             <Link href="/book" className="text-xs uppercase tracking-wider text-gold-400 hover:text-gold-500">
               Book Now
+            </Link>
+            <Link href="/team" className="text-xs uppercase tracking-wider text-sage-300 hover:text-cream-50">
+              Team
             </Link>
             <Link href="/#services" className="text-xs uppercase tracking-wider text-sage-300 hover:text-cream-50">
               Services

@@ -1,7 +1,10 @@
 import {
   getPricingOption,
   getServiceById,
-  standardPricingOptions,
+  HAPPY_ENDING_ADDON_PRICE,
+  normalizeServiceId,
+  supportsHappyEndingAddon,
+  DEFAULT_PRICING_OPTION_ID,
 } from "@/data/services";
 import type { BookedServiceLine, ServiceSelection } from "@/types/booking";
 
@@ -11,18 +14,27 @@ export function resolveBookedServices(
   const lines: BookedServiceLine[] = [];
 
   for (const selection of selections) {
-    const service = getServiceById(selection.serviceId);
+    const serviceId = normalizeServiceId(selection.serviceId);
+    const service = getServiceById(serviceId);
     if (!service) return null;
 
     const option = getPricingOption(service, selection.pricingOptionId);
     if (!option) return null;
 
+    const happyEndingAddon =
+      selection.happyEnding && supportsHappyEndingAddon(serviceId)
+        ? HAPPY_ENDING_ADDON_PRICE
+        : 0;
+
     lines.push({
       id: service.id,
-      name: service.name,
+      name:
+        happyEndingAddon > 0
+          ? `${service.name} + Happy ending`
+          : service.name,
       duration: option.durationMinutes,
       durationLabel: option.label,
-      price: option.price,
+      price: option.price + happyEndingAddon,
       pricingOptionId: option.id,
     });
   }
@@ -44,15 +56,21 @@ export function decodeSelections(raw: string | undefined): ServiceSelection[] | 
     const valid = parsed.every(
       (item) =>
         typeof item.serviceId === "string" &&
-        typeof item.pricingOptionId === "string"
+        typeof item.pricingOptionId === "string" &&
+        (item.happyEnding === undefined || typeof item.happyEnding === "boolean")
     );
 
     if (!valid) return null;
 
-    const lines = resolveBookedServices(parsed);
-    if (!lines || lines.length !== parsed.length) return null;
+    const normalized = parsed.map((item) => ({
+      ...item,
+      serviceId: normalizeServiceId(item.serviceId),
+    }));
 
-    return parsed;
+    const lines = resolveBookedServices(normalized);
+    if (!lines || lines.length !== normalized.length) return null;
+
+    return normalized;
   } catch {
     return null;
   }
@@ -66,7 +84,7 @@ export function decodeLegacyServiceIds(raw: string | undefined): ServiceSelectio
 
   return serviceIds.map((serviceId) => ({
     serviceId,
-    pricingOptionId: standardPricingOptions[0].id,
+    pricingOptionId: DEFAULT_PRICING_OPTION_ID,
   }));
 }
 

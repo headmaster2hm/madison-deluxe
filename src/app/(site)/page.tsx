@@ -188,9 +188,14 @@ export default function HomePage() {
               Whether you seek relief from muscle tension, a glowing complexion,
               or a moment of mindful peace — we are here to guide your journey to wellness.
             </p>
-            <Link href="/book" className="btn-primary mt-8">
-              Schedule Your Visit
-            </Link>
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+              <Link href="/team" className="btn-outline">
+                Meet Our Team
+              </Link>
+              <Link href="/book" className="btn-primary">
+                Schedule Your Visit
+              </Link>
+            </div>
           </div>
         </div>
       </section>

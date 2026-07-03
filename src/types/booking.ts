@@ -1,6 +1,7 @@
 export interface ServiceSelection {
   serviceId: string;
   pricingOptionId: string;
+  happyEnding?: boolean;
 }
 
 export interface BookingData {

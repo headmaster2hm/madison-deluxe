@@ -2,10 +2,10 @@
 
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { saveBooking } from "@/lib/booking-storage";
 import { getSelectionTotals, resolveBookedServices } from "@/lib/service-selection";
-import { services, standardPricingOptions, timeSlots } from "@/data/services";
+import { DEFAULT_PRICING_OPTION_ID, getStartingPrice, services, timeSlots, HAPPY_ENDING_ADDON_PRICE, normalizeServiceId, supportsHappyEndingAddon } from "@/data/services";
 import type { ServiceSelection } from "@/types/booking";
 
 interface FormData {
@@ -21,9 +21,26 @@ interface FormData {
 
 type FormErrors = Partial<Record<keyof FormData | "selections", string>>;
 
-const DEFAULT_PRICING_OPTION_ID = standardPricingOptions[0].id;
+const SERVICES_PAGE_SIZE = 4;
 
-function BookingForm() {
+function getInitialVisibleCount(preselectedServiceId: string): number {
+  if (!preselectedServiceId) return SERVICES_PAGE_SIZE;
+
+  const index = services.findIndex((s) => s.id === preselectedServiceId);
+  if (index === -1) return SERVICES_PAGE_SIZE;
+
+  return Math.ceil((index + 1) / SERVICES_PAGE_SIZE) * SERVICES_PAGE_SIZE;
+}
+
+function BookingForm({
+  visibleCount,
+  onShowMore,
+  setVisibleCount,
+}: {
+  visibleCount: number;
+  onShowMore: () => void;
+  setVisibleCount: (count: number) => void;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedService = searchParams.get("service") ?? "";
@@ -34,13 +51,30 @@ function BookingForm() {
     email: "",
     phone: "",
     selections: preselectedService
-      ? [{ serviceId: preselectedService, pricingOptionId: DEFAULT_PRICING_OPTION_ID }]
+      ? [
+          {
+            serviceId: normalizeServiceId(preselectedService),
+            pricingOptionId: DEFAULT_PRICING_OPTION_ID,
+            ...(supportsHappyEndingAddon(preselectedService)
+              ? { happyEnding: false }
+              : {}),
+          },
+        ]
       : [],
     date: "",
     time: "",
     notes: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
+
+  const visibleServices = services.slice(0, visibleCount);
+  const hasMoreServices = visibleCount < services.length;
+
+  useEffect(() => {
+    if (preselectedService) {
+      setVisibleCount(getInitialVisibleCount(preselectedService));
+    }
+  }, [preselectedService, setVisibleCount]);
 
   const bookedLines = useMemo(
     () => resolveBookedServices(formData.selections) ?? [],
@@ -109,6 +143,9 @@ function BookingForm() {
     formData.selections.find((s) => s.serviceId === serviceId)?.pricingOptionId ??
     DEFAULT_PRICING_OPTION_ID;
 
+  const getHappyEndingSelected = (serviceId: string) =>
+    formData.selections.find((s) => s.serviceId === serviceId)?.happyEnding ?? false;
+
   const toggleService = (serviceId: string) => {
     setFormData((prev) => {
       const isSelected = prev.selections.some((s) => s.serviceId === serviceId);
@@ -116,7 +153,11 @@ function BookingForm() {
         ? prev.selections.filter((s) => s.serviceId !== serviceId)
         : [
             ...prev.selections,
-            { serviceId, pricingOptionId: DEFAULT_PRICING_OPTION_ID },
+            {
+              serviceId,
+              pricingOptionId: DEFAULT_PRICING_OPTION_ID,
+              ...(supportsHappyEndingAddon(serviceId) ? { happyEnding: false } : {}),
+            },
           ];
       return { ...prev, selections };
     });
@@ -131,6 +172,20 @@ function BookingForm() {
       selections: prev.selections.map((selection) =>
         selection.serviceId === serviceId
           ? { ...selection, pricingOptionId }
+          : selection
+      ),
+    }));
+    if (errors.selections) {
+      setErrors((prev) => ({ ...prev, selections: undefined }));
+    }
+  };
+
+  const toggleHappyEnding = (serviceId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      selections: prev.selections.map((selection) =>
+        selection.serviceId === serviceId
+          ? { ...selection, happyEnding: !selection.happyEnding }
           : selection
       ),
     }));
@@ -223,9 +278,14 @@ function BookingForm() {
           <p className="text-xs text-sage-500">Choose services and duration</p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          {services.map((service) => {
+          {visibleServices.map((service) => {
             const isSelected = isServiceSelected(service.id);
             const selectedPricingOptionId = getSelectedPricingOptionId(service.id);
+            const happyEndingSelected = getHappyEndingSelected(service.id);
+            const happyEndingAddon =
+              happyEndingSelected && supportsHappyEndingAddon(service.id)
+                ? HAPPY_ENDING_ADDON_PRICE
+                : 0;
 
             return (
               <div
@@ -259,7 +319,7 @@ function BookingForm() {
                       <span className="font-medium text-sage-800">{service.name}</span>
                     </div>
                     <p className="mt-1 text-xs text-sage-500">
-                      From ${standardPricingOptions[0].price}
+                      From ${getStartingPrice(service)}
                     </p>
                   </div>
                 </label>
@@ -290,16 +350,53 @@ function BookingForm() {
                             />
                             {option.label}
                           </span>
-                          <span className="font-semibold">${option.price}</span>
+                          <span className="font-semibold">
+                            ${option.price + happyEndingAddon}
+                          </span>
                         </label>
                       ))}
                     </div>
+
+                    {supportsHappyEndingAddon(service.id) && (
+                      <div className="mt-4 border-t border-sage-200 pt-4">
+                        <p className="mb-2 text-xs font-medium uppercase tracking-wider text-sage-500">
+                          Add-on
+                        </p>
+                        <label className="flex cursor-pointer items-center justify-between rounded-lg border border-sage-200 bg-white/70 px-3 py-2.5 text-xs transition-colors hover:border-sage-300">
+                          <span className="flex items-center gap-2 text-sage-700">
+                            <input
+                              type="checkbox"
+                              checked={happyEndingSelected}
+                              onChange={() => toggleHappyEnding(service.id)}
+                              className="accent-sage-600"
+                            />
+                            Happy ending
+                          </span>
+                          <span className="font-semibold text-sage-800">
+                            +${HAPPY_ENDING_ADDON_PRICE}
+                          </span>
+                        </label>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
             );
           })}
         </div>
+        {hasMoreServices && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onShowMore();
+            }}
+            className="mt-4 w-full cursor-pointer rounded-lg border border-sage-200 py-3 text-center text-sm font-medium uppercase tracking-wider text-sage-600 transition-colors hover:border-sage-400 hover:bg-sage-50 hover:text-sage-800"
+          >
+            More
+          </button>
+        )}
         {errors.selections && (
           <p className="mt-2 text-xs text-red-500">{errors.selections}</p>
         )}
@@ -404,6 +501,12 @@ function BookingForm() {
 }
 
 export default function BookingFormWrapper() {
+  const [visibleCount, setVisibleCount] = useState(SERVICES_PAGE_SIZE);
+
+  const showMoreServices = () => {
+    setVisibleCount((count) => Math.min(count + SERVICES_PAGE_SIZE, services.length));
+  };
+
   return (
     <Suspense
       fallback={
@@ -412,7 +515,11 @@ export default function BookingFormWrapper() {
         </div>
       }
     >
-      <BookingForm />
+      <BookingForm
+        visibleCount={visibleCount}
+        onShowMore={showMoreServices}
+        setVisibleCount={setVisibleCount}
+      />
     </Suspense>
   );
 }
